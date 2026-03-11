@@ -23,7 +23,8 @@
             font-family: 'Heebo', sans-serif;
             background: var(--background);
             color: var(--text);
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         .deck {
@@ -35,15 +36,16 @@
         .slide {
             position: absolute;
             width: 100%;
-            height: 100%;
+            min-height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 80px 40px;
+            padding: 80px 40px 120px 40px;
             opacity: 0;
             transition: opacity 0.8s ease;
             pointer-events: none;
+            overflow-y: auto;
         }
 
         .slide.active {
@@ -384,30 +386,39 @@
 
         // Touch navigation
         let touchStartX = 0;
+        let touchStartY = 0;
         let touchEndX = 0;
+        let touchEndY = 0;
 
         document.addEventListener('touchstart', (e) => {
             touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
         });
 
         document.addEventListener('touchend', (e) => {
             touchEndX = e.changedTouches[0].clientX;
-            const touchDiff = touchStartX - touchEndX;
+            touchEndY = e.changedTouches[0].clientY;
             
-            if (Math.abs(touchDiff) < 10) {
-                // Tap
-                const screenWidth = window.innerWidth;
-                if (touchEndX < screenWidth / 2) {
-                    prevSlide();
-                } else {
+            const touchDiffX = touchStartX - touchEndX;
+            const touchDiffY = touchStartY - touchEndY;
+            
+            // Only handle horizontal swipes (not vertical scrolls)
+            if (Math.abs(touchDiffX) > Math.abs(touchDiffY)) {
+                if (Math.abs(touchDiffX) < 10) {
+                    // Tap (horizontal)
+                    const screenWidth = window.innerWidth;
+                    if (touchEndX < screenWidth / 2) {
+                        prevSlide();
+                    } else {
+                        nextSlide();
+                    }
+                } else if (touchDiffX > 50) {
+                    // Swipe left
                     nextSlide();
+                } else if (touchDiffX < -50) {
+                    // Swipe right
+                    prevSlide();
                 }
-            } else if (touchDiff > 50) {
-                // Swipe left
-                nextSlide();
-            } else if (touchDiff < -50) {
-                // Swipe right
-                prevSlide();
             }
         });
     </script>
